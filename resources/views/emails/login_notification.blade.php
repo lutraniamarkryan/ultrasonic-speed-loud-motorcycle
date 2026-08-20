@@ -1,9 +1,16 @@
 <h2>Ultrasonic System Login Notification</h2>
 
-<p>An administrator has successfully logged in to the Ultrasonic Traffic Monitoring System.</p>
+<p>
+    An administrator has successfully logged in to the
+    Ultrasonic Traffic Monitoring System.
+</p>
 
 <p>
     <strong>User:</strong> {{ $email }}
+</p>
+
+<p>
+    <strong>Login Using:</strong> {{ $device }}
 </p>
 
 <p>
