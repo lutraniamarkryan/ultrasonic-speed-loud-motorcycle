@@ -28,6 +28,9 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // Create Sanctum token for Android app
+        $token = $user->createToken('android-app')->plainTextToken;
+
         // Send notification for Android login
         Mail::to('ultrasonicspeed01@gmail.com')->send(
             new LoginNotification($user->email, 'Phone')
@@ -36,6 +39,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Login Successful',
+            'token' => $token,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
