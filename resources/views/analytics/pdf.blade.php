@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Traffic Device Analytics Report</title>
+    <title>Device Analytics Report</title>
 
     <style>
         body {
