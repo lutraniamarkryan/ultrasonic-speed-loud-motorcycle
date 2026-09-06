@@ -1,13 +1,21 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h3 class="h4 m-0 text-white fw-bold text-shadow">
-    Device Statistical Analytics
-  </h3>
+    <h3 class="h4 m-0 text-white fw-bold text-shadow">
+        Device Statistical Analytics
+    </h3>
 
-  <a href="{{ route('analytics.export') }}"
-     class="btn btn-success btn-sm fw-bold shadow-sm">
-    <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>
-    Download CSV Report
-  </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('analytics.pdf') }}"
+           class="btn btn-danger btn-sm fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+            Download PDF Report
+        </a>
+
+        <a href="{{ route('analytics.export') }}"
+           class="btn btn-success btn-sm fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>
+            Download CSV Report
+        </a>
+    </div>
 </div>
 
 

@@ -64,3 +64,6 @@ Route::patch('/violations/{id}/resolve',
 
 Route::get('/logs', [ViolationController::class, 'recordsLogs'])
     ->name('logs');
+
+Route::get('/analytics/pdf', [ViolationController::class, 'exportPDF'])
+    ->name('analytics.pdf');

@@ -4,17 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Violation;
-use Illuminate\Support\Facades\DB;
 use App\Models\SystemLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ViolationController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | DASHBOARD
-    |--------------------------------------------------------------------------
-    */
-
     public function index()
     {
         $totalCount = Violation::count();
@@ -27,16 +21,9 @@ class ViolationController extends Controller
         return view('MainDashboard', [
             'totalCount' => $totalCount,
             'violations' => $recentViolations,
-            'violation'  => $recentViolations
+            'violation' => $recentViolations
         ]);
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VIOLATION RECORDS PANEL
-    |--------------------------------------------------------------------------
-    */
 
     public function recordsPanel()
     {
@@ -47,28 +34,14 @@ class ViolationController extends Controller
 
         return view('partials.violations_table', [
             'violations' => $allRecords,
-            'violation'  => $allRecords
+            'violation' => $allRecords
         ]);
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CREATE VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function create()
     {
         return view('violations.create');
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function store(Request $request)
     {
@@ -86,29 +59,15 @@ class ViolationController extends Controller
         SystemLog::create([
             'user' => auth()->user()->email ?? 'Admin',
             'action' => 'Added Violation',
-            'description' =>
-                'Added violation for plate number ' .
-                $violation->plate_number,
+            'description' => 'Added violation for plate number ' . $violation->plate_number,
             'violation_id' => $violation->id,
-            'location' =>
-                $violation->location ??
-                'Binalonan, Pangasinan',
+            'location' => $violation->location ?? 'Binalonan, Pangasinan',
         ]);
 
         return redirect()
             ->route('dashboard')
-            ->with(
-                'success',
-                'Violation added successfully.'
-            );
+            ->with('success', 'Violation added successfully.');
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | EDIT VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function edit($id)
     {
@@ -119,13 +78,6 @@ class ViolationController extends Controller
             compact('violation')
         );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPDATE VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function update(Request $request, $id)
     {
@@ -145,38 +97,22 @@ class ViolationController extends Controller
         SystemLog::create([
             'user' => auth()->user()->email ?? 'Admin',
             'action' => 'Updated Violation',
-            'description' =>
-                'Updated violation for plate number ' .
-                $violation->plate_number,
+            'description' => 'Updated violation for plate number ' . $violation->plate_number,
             'violation_id' => $violation->id,
-            'location' =>
-                $violation->location ??
-                'Binalonan, Pangasinan',
+            'location' => $violation->location ?? 'Binalonan, Pangasinan',
         ]);
 
         return redirect()
             ->route('dashboard')
-            ->with(
-                'success',
-                'Violation updated successfully.'
-            );
+            ->with('success', 'Violation updated successfully.');
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function destroy($id)
     {
         $violation = Violation::findOrFail($id);
 
         $plateNumber = $violation->plate_number;
-        $location =
-            $violation->location ??
-            'Binalonan, Pangasinan';
+        $location = $violation->location ?? 'Binalonan, Pangasinan';
         $violationId = $violation->id;
 
         $violation->delete();
@@ -184,27 +120,15 @@ class ViolationController extends Controller
         SystemLog::create([
             'user' => auth()->user()->email ?? 'Admin',
             'action' => 'Deleted Violation',
-            'description' =>
-                'Deleted violation for plate number ' .
-                $plateNumber,
+            'description' => 'Deleted violation for plate number ' . $plateNumber,
             'violation_id' => $violationId,
             'location' => $location,
         ]);
 
         return redirect()
             ->route('dashboard')
-            ->with(
-                'success',
-                'Violation deleted successfully.'
-            );
+            ->with('success', 'Violation deleted successfully.');
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESOLVE VIOLATION
-    |--------------------------------------------------------------------------
-    */
 
     public function resolve($id)
     {
@@ -217,49 +141,19 @@ class ViolationController extends Controller
         SystemLog::create([
             'user' => auth()->user()->email ?? 'Admin',
             'action' => 'Resolved Violation',
-            'description' =>
-                'Marked violation for plate number ' .
-                $violation->plate_number .
-                ' as resolved',
+            'description' => 'Marked violation for plate number ' . $violation->plate_number . ' as resolved',
             'violation_id' => $violation->id,
-            'location' =>
-                $violation->location ??
-                'Binalonan, Pangasinan',
+            'location' => $violation->location ?? 'Binalonan, Pangasinan',
         ]);
 
         return redirect()
             ->route('dashboard')
-            ->with(
-                'success',
-                'Violation marked as resolved.'
-            );
+            ->with('success', 'Violation marked as resolved.');
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ANALYTICS PANEL
-    |--------------------------------------------------------------------------
-    */
 
     public function analyticsPanel()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL VIOLATIONS
-        |--------------------------------------------------------------------------
-        */
-
         $totalViolations = Violation::count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | OVER-SPEEDING - TODAY
-        |
-        | Overspeeding + Both
-        |--------------------------------------------------------------------------
-        */
 
         $speedDaily = Violation::whereIn(
             'violation_type',
@@ -273,13 +167,6 @@ class ViolationController extends Controller
             today()
         )
         ->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | OVER-SPEEDING - THIS MONTH
-        |--------------------------------------------------------------------------
-        */
 
         $speedMonthly = Violation::whereIn(
             'violation_type',
@@ -298,15 +185,6 @@ class ViolationController extends Controller
         )
         ->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | LOUD MOTORCYCLE - TODAY
-        |
-        | Database value is "Loud Pipe"
-        |--------------------------------------------------------------------------
-        */
-
         $loudDaily = Violation::whereIn(
             'violation_type',
             [
@@ -319,13 +197,6 @@ class ViolationController extends Controller
             today()
         )
         ->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | LOUD MOTORCYCLE - THIS MONTH
-        |--------------------------------------------------------------------------
-        */
 
         $loudMonthly = Violation::whereIn(
             'violation_type',
@@ -344,15 +215,6 @@ class ViolationController extends Controller
         )
         ->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL OVER-SPEEDING
-        |
-        | Used by the comparison chart
-        |--------------------------------------------------------------------------
-        */
-
         $speedTotal = Violation::whereIn(
             'violation_type',
             [
@@ -361,15 +223,6 @@ class ViolationController extends Controller
             ]
         )->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL LOUD MOTORCYCLE
-        |
-        | Used by the comparison chart
-        |--------------------------------------------------------------------------
-        */
-
         $loudTotal = Violation::whereIn(
             'violation_type',
             [
@@ -377,13 +230,6 @@ class ViolationController extends Controller
                 'Both'
             ]
         )->count();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | 24-HOUR PEAK HOURS
-        |--------------------------------------------------------------------------
-        */
 
         $hourlyDataset = array_fill(
             0,
@@ -398,22 +244,13 @@ class ViolationController extends Controller
         ->get();
 
         foreach ($rawHours as $record) {
-
             if ($record->hour !== null) {
-
                 $hour = (int) $record->hour;
 
                 $hourlyDataset[$hour] =
                     (int) $record->total;
             }
         }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | REPEAT OFFENDERS
-        |--------------------------------------------------------------------------
-        */
 
         $repeatOffenders = Violation::select(
             'plate_number'
@@ -449,67 +286,21 @@ class ViolationController extends Controller
         ->take(5)
         ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | RETURN ANALYTICS PANEL
-        |--------------------------------------------------------------------------
-        */
-
         return view(
             'partials.analytics_panel',
             [
-                'totalViolations' =>
-                    $totalViolations,
-
-                'speedDaily' =>
-                    $speedDaily,
-
-                'speedMonthly' =>
-                    $speedMonthly,
-
-                'loudDaily' =>
-                    $loudDaily,
-
-                'loudMonthly' =>
-                    $loudMonthly,
-
-                /*
-                | New variables for:
-                | Overspeeding vs Loud Motorcycle
-                */
-
-                'speedTotal' =>
-                    $speedTotal,
-
-                'loudTotal' =>
-                    $loudTotal,
-
-                /*
-                | Peak Hours
-                */
-
-                'hourlyData' =>
-                    array_values(
-                        $hourlyDataset
-                    ),
-
-                /*
-                | Repeat offenders
-                */
-
-                'repeatOffenders' =>
-                    $repeatOffenders
+                'totalViolations' => $totalViolations,
+                'speedDaily' => $speedDaily,
+                'speedMonthly' => $speedMonthly,
+                'loudDaily' => $loudDaily,
+                'loudMonthly' => $loudMonthly,
+                'speedTotal' => $speedTotal,
+                'loudTotal' => $loudTotal,
+                'hourlyData' => array_values($hourlyDataset),
+                'repeatOffenders' => $repeatOffenders
             ]
         );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | EXPORT CSV
-    |--------------------------------------------------------------------------
-    */
 
     public function exportCSV()
     {
@@ -524,20 +315,11 @@ class ViolationController extends Controller
             '.csv';
 
         $headers = [
-            'Content-type' =>
-                'text/csv',
-
-            'Content-Disposition' =>
-                "attachment; filename=$csvFileName",
-
-            'Pragma' =>
-                'no-cache',
-
-            'Cache-Control' =>
-                'must-revalidate, post-check=0, pre-check=0',
-
-            'Expires' =>
-                '0'
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$csvFileName",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
         ];
 
         $columns = [
@@ -554,7 +336,6 @@ class ViolationController extends Controller
             $records,
             $columns
         ) {
-
             $file = fopen(
                 'php://output',
                 'w'
@@ -566,28 +347,16 @@ class ViolationController extends Controller
             );
 
             foreach ($records as $task) {
-
                 fputcsv(
                     $file,
                     [
                         $task->id,
-
-                        $task->plate_number ??
-                            'N/A',
-
-                        $task->violation_type ??
-                            'N/A',
-
-                        ($task->recorded_speed ?? 0) .
-                            ' km/h',
-
-                        ($task->decibel_level ?? 0) .
-                            ' dB',
-
+                        $task->plate_number ?? 'N/A',
+                        $task->violation_type ?? 'N/A',
+                        ($task->recorded_speed ?? 0) . ' km/h',
+                        ($task->decibel_level ?? 0) . ' dB',
                         $task->created_at,
-
-                        $task->status ??
-                            'Pending'
+                        $task->status ?? 'Pending'
                     ]
                 );
             }
@@ -602,12 +371,167 @@ class ViolationController extends Controller
         );
     }
 
+    public function exportPDF()
+    {
+        $totalViolations = Violation::count();
 
-    /*
-    |--------------------------------------------------------------------------
-    | SYSTEM LOGS
-    |--------------------------------------------------------------------------
-    */
+        $speedDaily = Violation::whereIn(
+            'violation_type',
+            [
+                'Overspeeding',
+                'Both'
+            ]
+        )
+        ->whereDate(
+            'created_at',
+            today()
+        )
+        ->count();
+
+        $speedMonthly = Violation::whereIn(
+            'violation_type',
+            [
+                'Overspeeding',
+                'Both'
+            ]
+        )
+        ->whereMonth(
+            'created_at',
+            now()->month
+        )
+        ->whereYear(
+            'created_at',
+            now()->year
+        )
+        ->count();
+
+        $loudDaily = Violation::whereIn(
+            'violation_type',
+            [
+                'Loud Pipe',
+                'Both'
+            ]
+        )
+        ->whereDate(
+            'created_at',
+            today()
+        )
+        ->count();
+
+        $loudMonthly = Violation::whereIn(
+            'violation_type',
+            [
+                'Loud Pipe',
+                'Both'
+            ]
+        )
+        ->whereMonth(
+            'created_at',
+            now()->month
+        )
+        ->whereYear(
+            'created_at',
+            now()->year
+        )
+        ->count();
+
+        $speedTotal = Violation::whereIn(
+            'violation_type',
+            [
+                'Overspeeding',
+                'Both'
+            ]
+        )->count();
+
+        $loudTotal = Violation::whereIn(
+            'violation_type',
+            [
+                'Loud Pipe',
+                'Both'
+            ]
+        )->count();
+
+        $hourlyDataset = array_fill(
+            0,
+            24,
+            0
+        );
+
+        $rawHours = Violation::selectRaw(
+            'HOUR(created_at) as hour, COUNT(*) as total'
+        )
+        ->groupBy('hour')
+        ->get();
+
+        foreach ($rawHours as $record) {
+            if ($record->hour !== null) {
+                $hour = (int) $record->hour;
+
+                $hourlyDataset[$hour] =
+                    (int) $record->total;
+            }
+        }
+
+        $repeatOffenders = Violation::select(
+            'plate_number'
+        )
+        ->selectRaw(
+            'COUNT(*) as total_offenses'
+        )
+        ->whereNotNull(
+            'plate_number'
+        )
+        ->where(
+            'plate_number',
+            '!=',
+            'N/A'
+        )
+        ->where(
+            'plate_number',
+            '!=',
+            ''
+        )
+        ->groupBy(
+            'plate_number'
+        )
+        ->having(
+            'total_offenses',
+            '>',
+            1
+        )
+        ->orderBy(
+            'total_offenses',
+            'desc'
+        )
+        ->take(5)
+        ->get();
+
+        $pdf = Pdf::loadView(
+            'analytics.pdf',
+            [
+                'totalViolations' => $totalViolations,
+                'speedDaily' => $speedDaily,
+                'speedMonthly' => $speedMonthly,
+                'loudDaily' => $loudDaily,
+                'loudMonthly' => $loudMonthly,
+                'speedTotal' => $speedTotal,
+                'loudTotal' => $loudTotal,
+                'hourlyData' => array_values($hourlyDataset),
+                'repeatOffenders' => $repeatOffenders
+            ]
+        );
+
+        $pdf->setPaper(
+            'A4',
+            'portrait'
+        );
+
+        return $pdf->download(
+            'traffic_device_analytics_' .
+            date('Y-m-d') .
+            '.pdf'
+        );
+    }
 
     public function recordsLogs()
     {
